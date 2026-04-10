@@ -934,66 +934,135 @@ INSERT INTO pago VALUES (38,'PayPal','ak-std-000026','2006-05-26',1171);
 /* EJEMPLO PARA CONOCER LAS COLUMNAS DE UNA TABLA*/
 DESCRIBE EMPLEADO;
 
-SELECT codigo_empleado, nombre, apellido1, apellido2,
-extension, email, codigo_oficina, codigo_jefe
+SELECT codigo_empleado, 
+nombre, 
+apellido1, 
+apellido2,
+extension, 
+email, 
+codigo_oficina, 
+codigo_jefe,
 puesto FROM EMPLEADO;
 
 /* RETO 1 - Retorna un listado con el código de oficina y 
 la ciudad donde hay oficinas */
 
-describe oficina;
+Describe oficina;
 
-select o.codigo_oficina as cod_oficina, o.ciudad country,
-concat(o.codigo_oficina,' - ', o.ciudad) as cod_ciudad_oficina
- from oficina o;
+select codigo_oficina, ciudad FROM oficina;
+
+
  
  /* RETO 2 - Retorna un listado con la ciudad y 
  el telefono de las oficinas en España. */
  
- select ciudad, telefono, pais from oficina
- where upper(pais) = 'ESPAÑA';
+ Describe oficina;
  
- /* RETO 3 - Retorna el listado con todos los clientes que sean
- de la ciudad de Madrid y cuyo representante de ventas tenga 
- el código de empleado 11 ó 30. */
+ select ciudad FROM oficina;
+ 
+ select ciudad, telefono FROM oficina WHERE pais="España";
+ 
+ /* RETO 3 - Retorna un listado con el nombre, apellidos y email de los empleados cuyo jefe tiene un código de jefe igual a 7. */
 
-/*RETO 4 */
+ Describe  empleado;
+ 
+ select nombre, apellido1, apellido2, email FROM empleado WHERE codigo_jefe = "7";
+ 
+/* RETO 4 - Retorna el nombre del puesto, nombre, apellidos y email del jefe de la empresa. */
+
+Describe empleado;
+select puesto, codigo_empleado FROM empleado;
+select nombre, apellido1, apellido2, email, puesto FROM empleado WHERE codigo_empleado="1";
+
+ /* RETO 5 - Retorna un listado con el nombre, apellidos y puesto de aquellos empleados que no sean representantes de ventas.*/
+ 
+ describe empleado;
+ select nombre, apellido1, apellido2, puesto FROM empleado WHERE puesto <> "Representante Ventas";
+
+ /* RETO 6 - Retorna un listado con el nombre de los todos los clientes españoles.*/
+ 
+ describe cliente;
+select nombre_cliente, pais FROM cliente WHERE pais ="Spain";
+
+ /* RETO 7 - Retorna un listado con los distintos estados por los que puede pasar un pedido.*/
+ 
+ Describe pedido;
+ select distinct estado FROM pedido;
+ 
+
+ /* RETO 8 - Genera un listado con el código de cliente de aquellos clientes que realizaron algún pago en 2008. Tenga en cuenta que deberá eliminar aquellos códigos de cliente que aparezcan repetidos. Resuelva la consulta: */
+
+Describe cliente;
+Describe pago;
+select distinct codigo_cliente, fecha_pago from pago WHERE YEAR(fecha_pago) = "2008" group by codigo_cliente;
+
+/*Utilizando la función YEAR de MySQL.*/
+
+select distinct codigo_cliente, fecha_pago from pago WHERE YEAR(fecha_pago) = "2008";
+
+/*Utilizando la función DATE_FORMAT de MySQL. *Sin utilizar ninguna de las funciones anteriores. */
+
+select distinct codigo_cliente, fecha_pago from pago WHERE date_format(fecha_pago, '%Y') = "2008";
+
+
+ /* RETO 9 - Genera un listado con el código de pedido, código de cliente, fecha esperada y fecha de entrega de los pedidos que no han sido entregados a tiempo.*/
+
+describe pedido;
+select distinct estado from pedido;
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega, estado FROM pedido;
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega, estado FROM pedido WHERE fecha_entrega > fecha_esperada;
+
+ /* RETO 10 - Genera un listado con el código de pedido, código de cliente, fecha esperada y fecha de entrega de los pedidos cuya fecha de entrega ha sido al menos dos días antes de la fecha esperada.*/
+describe pedido;
+
+/*-Utilizando la función ADDDATE de MySQL.*/
+
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega FROM pedido WHERE fecha_entrega <= ADDDATE(fecha_esperada, INTERVAL -2 DAY);
+
+/*-Utilizando la función DATEDIFF de MySQL.*/
+
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega, DATEDIFF(fecha_esperada, fecha_entrega) AS dias_anticipacion FROM pedido WHERE fecha_entrega <= ADDDATE(fecha_esperada, INTERVAL -2 DAY);
+
+/*¿Sería posible resolver esta consulta utilizando el operador de suma + o resta -? */
+ select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega FROM pedido WHERE fecha_entrega >= fecha_esperada + INTERVAL 2 DAY;
+ 
+ /* RETO 11 - Genera un listado de todos los pedidos que fueron rechazados en 2009.*/
+ 
+ describe pedido;
+ select estado from pedido;
+ select estado, fecha_pedido FROM pedido WHERE YEAR (fecha_pedido) = "2009" and estado = "Rechazado";
+
+ /* RETO 12 - Genera un listado de todos los pedidos que han sido entregados en el mes de enero de cualquier año.*/
+ 
+ describe pedido;
+ select fecha_pedido from pedido;
+ select codigo_pedido, codigo_cliente, fecha_entrega FROM pedido WHERE MONTH(fecha_entrega) = 1;
+
+
+ /* RETO 13 - Genera un listado con todos los pagos que se realizaron en el año 2008 mediante Paypal. Ordene el resultado de mayor a menor.*/
+ 
+ describe pago;
+ select fecha_pago, forma_pago FROM pago WHERE YEAR (fecha_pago) = "2008" and forma_pago = "Paypal" order by fecha_pago desc;
+
+ /* RETO 14 - Genera un listado con todas las formas de pago que aparecen en la tabla pago. Tenga en cuenta que no deben aparecer formas de pago repetidas.*/
+ 
+ describe pago;
+ select distinct forma_pago FROM pago;
+ 
+ /* RETO 15 - Genera un listado con todos los productos que pertenecen a la gama Ornamentales y que tienen más de 100 unidades en stock. El listado deberá estar ordenado por su precio de venta, mostrando en primer lugar los de mayor precio.*/
+
+describe gama_producto;
+select gama FROM gama_producto;
+select cantidad_en_stock, gama FROM producto;
+select nombre, precio_venta, cantidad_en_stock, gama FROM producto WHERE  gama = "Ornamentales" and cantidad_en_stock > 100 order by precio_venta desc;
+ 
+/* RETO 16 -  Genera un listado con todos los clientes que sean de la ciudad de Madrid y cuyo representante de ventas tenga el código de empleado 11 o 30.*/
  
  describe cliente;
  describe empleado;
  
- select count(*) total_registros /*cl.ciudad, em.codigo_empleado */
- from cliente cl 
- join empleado em 
- on em.codigo_empleado = cl.codigo_empleado_rep_ventas
- where upper(cl.ciudad) = 'MADRID'
- and (em.codigo_empleado = 11 
- OR em.codigo_empleado = 30);
- 
-  select count(*) total_registros /*cl.ciudad, em.codigo_empleado */
- from cliente cl 
- join empleado em 
- on em.codigo_empleado = cl.codigo_empleado_rep_ventas
- where upper(cl.ciudad) = 'MADRID'
- and em.codigo_empleado in (11,30); 
- 
-select count(*) total_registros /*cl.ciudad, em.codigo_empleado */
- from cliente cl,  empleado em 
- where em.codigo_empleado = cl.codigo_empleado_rep_ventas
- and upper(cl.ciudad) = 'MADRID'
- and em.codigo_empleado in (11,30); 
- 
- select em.codigo_empleado, count(*) total_registros /*cl.ciudad, em.codigo_empleado */
- from cliente cl,  empleado em 
- where em.codigo_empleado = cl.codigo_empleado_rep_ventas
- and upper(cl.ciudad) = 'MADRID'
- and em.codigo_empleado in (11,30)
- group by em.codigo_empleado; 
+ select ciudad, codigo_empleado_rep_ventas FROM cliente WHERE ciudad = "Madrid" AND codigo_empleado_rep_ventas = "11" OR codigo_empleado_rep_ventas = "30";
 
- select cl.ciudad, count(*) total_registros /*cl.ciudad, em.codigo_empleado */
- from cliente cl,  empleado em 
- where em.codigo_empleado = cl.codigo_empleado_rep_ventas
- and em.codigo_empleado in (11,30)
- group by cl.ciudad
- order by cl.ciudad desc; 
 
+ /*JOHAN SAMUEL RAMIREZ PERILLA - 3171084 - ADSO*/
+ 
